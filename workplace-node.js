@@ -1,5 +1,6 @@
 //Dependencies
 const request = require('request')
+const {WorkplaceAPIError} = require('./lib/errors.js')
 
 //Params
 let workplace_access_token = null
@@ -36,7 +37,16 @@ function get(id, edge, qs) {
                 if (err) reject(err);
                 try {
                     //JSON.parse() can throw an exception if not valid JSON
-                    resolve(JSON.parse(body));
+                    let _body = JSON.parse(body)
+                    if(res.statusCode != 200 || res.statusCode != 201) 
+                        reject(
+                            new WorkplaceAPIError(
+                                res.statusCode, 
+                                _body.type, 
+                                _body.message, 
+                                _body.code, 
+                                _body.fbtrace_id))
+                    else resolve(_body);
                 } catch(e) {
                     reject(e);
                 }
